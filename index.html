@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="id" data-bs-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PustakaBekas Pro - Gudang Buku Second</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Nunito+Sans:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-color: #795548;
+        --accent-color: #ff7043;
+        --bg-light: #f8f9fa;
+        --text-dark: #212529;
+      }
+
+      /* Dark Mode Overrides */
+      [data-bs-theme="dark"] {
+        --primary-color: #d7ccc8;
+        --accent-color: #ffab91;
+        --bg-light: #212529;
+        --text-dark: #f8f9fa;
+      }
+
+      body {
+        font-family: "Nunito Sans", sans-serif;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      .serif {
+        font-family: "Libre Baskerville", serif;
+      }
+
+      /* Custom Navbar */
+      .navbar {
+        backdrop-filter: blur(10px);
+        background-color: rgba(255, 255, 255, 0.9);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+      [data-bs-theme="dark"] .navbar {
+        background-color: rgba(33, 37, 41, 0.95);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      /* Flash Sale Card */
+      .flash-card {
+        border: 2px solid var(--accent-color);
+        background: linear-gradient(45deg, #fff3e0, #fff);
+      }
+      [data-bs-theme="dark"] .flash-card {
+        background: linear-gradient(45deg, #3e2723, #212529);
+        border-color: #ffab91;
+      }
+
+      /* Product Card */
+      .card-product {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+        background-color: var(--bs-body-bg);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      }
+      .card-product:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+      .card-img-wrapper {
+        position: relative;
+        overflow: hidden;
+        height: 280px;
+      }
+      .card-img-top {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s;
+      }
+      .card-product:hover .card-img-top {
+        transform: scale(1.05);
+      }
+
+      /* Wishlist Button on Card */
+      .btn-wishlist {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        transition: 0.2s;
+        z-index: 2;
+      }
+      .btn-wishlist:hover {
+        background: white;
+        color: red;
+      }
+      .btn-wishlist.active {
+        background: white;
+        color: red;
+      }
+
+      /* Badge Styles */
+      .badge-overlay {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 2;
+      }
+
+      /* Floating Filter Button (Mobile) */
+      .btn-float-filter {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000;
+        border-radius: 50px;
+        padding: 10px 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg sticky-top">
+      <div class="container">
+        <a class="navbar-brand serif fw-bold text-primary" href="#"
+          ><i class="bi bi-book me-2"></i>PustakaBekas</a
+        >
+
+        <div class="d-flex align-items-center order-lg-3 gap-3">
+          <button
+            class="btn btn-outline-secondary rounded-circle"
+            id="darkModeBtn"
+            onclick="toggleTheme()"
+          >
+            <i class="bi bi-moon-stars"></i>
+          </button>
+
+          <button
+            class="btn btn-outline-danger position-relative"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#wishlistCanvas"
+          >
+            <i class="bi bi-heart"></i>
+            <span
+              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+              id="wishBadge"
+              >0</span
+            >
+          </button>
+
+          <button
+            class="btn btn-primary position-relative"
+            data-bs-toggle="modal"
+            data-bs-target="#cartModal"
+          >
+            <i class="bi bi-cart2"></i>
+            <span
+              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark"
+              id="cartBadge"
+              >0</span
+            >
+          </button>
+
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        </div>
+
+        <div class="collapse navbar-collapse mt-3 mt-lg-0" id="navbarNav">
+          <ul class="navbar-nav mx-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="#">Beranda</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#flash-sale">Flash Sale</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#populer">Populer</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#katalog">Katalog</a>
+            </li>
+          </ul>
+          <form
+            class="d-flex"
+            onsubmit="event.preventDefault(); applyFilters();"
+          >
+            <input
+              class="form-control me-2 rounded-pill"
+              type="search"
+              placeholder="Cari buku..."
+              id="searchInput"
+            />
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <header
+      class="py-5 text-center"
+      style="
+        background: url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=1920')
+          no-repeat center center/cover;
+      "
+    >
+      <div class="container py-5">
+        <div
+          class="bg-dark bg-opacity-75 p-5 rounded-4 d-inline-block text-white backdrop-blur"
+        >
+          <h1 class="display-4 fw-bold serif">Buku Lama, Cerita Baru</h1>
+          <p class="lead mb-4">
+            Marketplace buku bekas terkurasi dengan kondisi layak baca dan harga
+            mahasiswa.
+          </p>
+          <a
+            href="#katalog"
+            class="btn btn-warning btn-lg fw-bold rounded-pill px-5"
+            >Belanja Sekarang</a
+          >
+        </div>
+      </div>
+    </header>
+
+    <section id="flash-sale" class="py-5">
+      <div class="container">
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <h3 class="serif fw-bold m-0">
+            <i class="bi bi-lightning-charge-fill text-warning"></i> Flash Sale
+          </h3>
+          <div
+            class="bg-danger text-white px-3 py-1 rounded fw-bold"
+            id="countdown"
+          >
+            00:00:00
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="card flash-card h-100 p-3 flex-row align-items-center">
+              <img
+                src="https://images.unsplash.com/photo-1592496431122-2349e0fbc666?q=80&w=300"
+                class="rounded"
+                width="120"
+                height="160"
+                style="object-fit: cover"
+              />
+              <div class="ms-3 flex-grow-1">
+                <span class="badge bg-danger mb-2">Diskon 60%</span>
+                <h5 class="fw-bold serif">The Psychology of Money</h5>
+                <p class="text-muted small mb-1">
+                  Morgan Housel • Kondisi: Like New
+                </p>
+                <div class="mb-2">
+                  <span class="text-decoration-line-through text-muted small"
+                    >Rp 95.000</span
+                  >
+                  <span class="text-danger fw-bold fs-5">Rp 38.000</span>
+                </div>
+                <div class="progress mb-2" style="height: 5px">
+                  <div class="progress-bar bg-danger" style="width: 85%"></div>
+                </div>
+                <small class="text-muted">Tersisa 2 buku!</small>
+                <button
+                  class="btn btn-sm btn-dark w-100 mt-2"
+                  onclick="addSpecialItem(1)"
+                >
+                  Ambil Promo
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card flash-card h-100 p-3 flex-row align-items-center">
+              <img
+                src="https://img.lazcdn.com/g/p/2785ba57b05a96970ff841c6ba1d28ed.jpg_720x720q80.jpg"
+                class="rounded"
+                width="120"
+                height="160"
+                style="object-fit: cover"
+              />
+              <div class="ms-3 flex-grow-1">
+                <span class="badge bg-danger mb-2">Diskon 50%</span>
+                <h5 class="fw-bold serif">Sapiens: Riwayat Singkat</h5>
+                <p class="text-muted small mb-1">
+                  Yuval Noah Harari • Kondisi: Good
+                </p>
+                <div class="mb-2">
+                  <span class="text-decoration-line-through text-muted small"
+                    >Rp 125.000</span
+                  >
+                  <span class="text-danger fw-bold fs-5">Rp 62.500</span>
+                </div>
+                <div class="progress mb-2" style="height: 5px">
+                  <div class="progress-bar bg-danger" style="width: 60%"></div>
+                </div>
+                <small class="text-muted">Tersisa 4 buku!</small>
+                <button
+                  class="btn btn-sm btn-dark w-100 mt-2"
+                  onclick="addSpecialItem(2)"
+                >
+                  Ambil Promo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="populer" class="py-5 bg-body-tertiary">
+      <div class="container">
+        <h3 class="serif fw-bold mb-4">🔥 Paling Banyak Dicari</h3>
+        <div
+          class="row row-cols-2 row-cols-md-4 g-3"
+          id="popularContainer"
+        ></div>
+      </div>
+    </section>
+
+    <section id="katalog" class="container py-5">
+      <div class="row">
+        <div class="col-lg-3 d-none d-lg-block">
+          <div class="card p-3 sticky-top" style="top: 90px">
+            <h5 class="serif fw-bold mb-3">Filter Buku</h5>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold small text-muted"
+                >KATEGORI</label
+              >
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="catFilter"
+                  value="all"
+                  id="catAll"
+                  checked
+                  onchange="applyFilters()"
+                />
+                <label class="form-check-label" for="catAll">Semua</label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="catFilter"
+                  value="fiksi"
+                  id="catFiksi"
+                  onchange="applyFilters()"
+                />
+                <label class="form-check-label" for="catFiksi"
+                  >Fiksi & Novel</label
+                >
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="catFilter"
+                  value="nonfiksi"
+                  id="catNon"
+                  onchange="applyFilters()"
+                />
+                <label class="form-check-label" for="catNon"
+                  >Pengembangan Diri</label
+                >
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="catFilter"
+                  value="teknologi"
+                  id="catTek"
+                  onchange="applyFilters()"
+                />
+                <label class="form-check-label" for="catTek"
+                  >Teknologi & Sains</label
+                >
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="catFilter"
+                  value="sejarah"
+                  id="catSej"
+                  onchange="applyFilters()"
+                />
+                <label class="form-check-label" for="catSej"
+                  >Sejarah & Biografi</label
+                >
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold small text-muted">KONDISI</label>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="condNew"
+                  value="Like New"
+                  onchange="applyFilters()"
+                />
+                <label class="form-check-label" for="condNew"
+                  >Like New (Mulus)</label
+                >
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="condGood"
+                  value="Good"
+                  onchange="applyFilters()"
+                />
+                <label class="form-check-label" for="condGood"
+                  >Good (Layak)</label
+                >
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="condFair"
+                  value="Fair"
+                  onchange="applyFilters()"
+                />
+                <label class="form-check-label" for="condFair"
+                  >Fair (Bekas Pakai)</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-9">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <span class="text-muted" id="resultCount"
+              >Menampilkan semua buku</span
+            >
+            <select
+              class="form-select w-auto"
+              id="sortSelect"
+              onchange="applyFilters()"
+            >
+              <option value="default">Urutkan: Relevansi</option>
+              <option value="low">Harga: Terendah</option>
+              <option value="high">Harga: Tertinggi</option>
+              <option value="az">Judul: A-Z</option>
+            </select>
+          </div>
+
+          <div
+            class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4"
+            id="bookContainer"
+          ></div>
+
+          <div class="text-center mt-5">
+            <button
+              class="btn btn-outline-primary rounded-pill px-4"
+              onclick="alert('Akan segera hadir!')"
+            >
+              Muat Lebih Banyak
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="bg-dark text-secondary py-5">
+      <div class="container">
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <h4 class="text-white serif">PustakaBekas</h4>
+            <p class="small">
+              Platform jual beli buku bekas terpercaya sejak 2024. Hemat uang,
+              selamatkan pohon.
+            </p>
+          </div>
+          <div class="col-lg-2 col-6">
+            <h6 class="text-white mb-3">Layanan</h6>
+            <ul class="list-unstyled small">
+              <li>
+                <a href="#" class="text-secondary text-decoration-none"
+                  >Jual Buku</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-secondary text-decoration-none"
+                  >Cek Resi</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-secondary text-decoration-none"
+                  >Garansi</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div class="col-lg-2 col-6">
+            <h6 class="text-white mb-3">Kategori</h6>
+            <ul class="list-unstyled small">
+              <li>
+                <a href="#" class="text-secondary text-decoration-none"
+                  >Novel</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-secondary text-decoration-none"
+                  >Komik</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-secondary text-decoration-none"
+                  >Pelajaran</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div class="col-lg-4">
+            <h6 class="text-white mb-3">Newsletter</h6>
+            <div class="input-group mb-3">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Email Anda"
+              />
+              <button class="btn btn-primary" type="button">Langganan</button>
+            </div>
+          </div>
+        </div>
+        <hr class="border-secondary" />
+        <p class="text-center small mb-0">
+          &copy; 2024 PustakaBekas Indonesia.
+        </p>
+      </div>
+    </footer>
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="wishlistCanvas">
+      <div class="offcanvas-header">
+        <h5 class="serif fw-bold">Buku Favorit ❤️</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="offcanvas"
+        ></button>
+      </div>
+      <div class="offcanvas-body">
+        <div id="wishlistContainer" class="d-flex flex-column gap-3"></div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="cartModal" tabindex="-1">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title serif">Keranjang Belanja</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body row">
+            <div class="col-lg-7 border-end">
+              <div
+                id="cartItems"
+                class="d-flex flex-column gap-3"
+                style="max-height: 400px; overflow-y: auto"
+              ></div>
+            </div>
+            <div class="col-lg-5">
+              <div class="bg-body-tertiary p-3 rounded">
+                <h6 class="fw-bold mb-3">Ringkasan & Pengiriman</h6>
+                <div class="mb-2">
+                  <label class="small">Nama Penerima</label>
+                  <input
+                    type="text"
+                    id="buyerName"
+                    class="form-control form-control-sm"
+                  />
+                </div>
+                <div class="mb-2">
+                  <label class="small">Provinsi Tujuan</label>
+                  <select
+                    class="form-select form-select-sm"
+                    id="provinceSelect"
+                    onchange="calculateTotal()"
+                  >
+                    <option value="0">Pilih Provinsi...</option>
+                    <option value="10000">DKI Jakarta (Rp 10rb)</option>
+                    <option value="20000">Jawa Barat (Rp 20rb)</option>
+                    <option value="25000">Jawa Tengah (Rp 25rb)</option>
+                    <option value="30000">Jawa Timur (Rp 30rb)</option>
+                    <option value="50000">Luar Jawa (Rp 50rb)</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="small">Alamat Lengkap</label>
+                  <textarea
+                    id="buyerAddress"
+                    class="form-control form-control-sm"
+                    rows="2"
+                  ></textarea>
+                </div>
+
+                <div class="d-flex justify-content-between small mb-1">
+                  <span>Subtotal</span>
+                  <span id="checkoutSubtotal">Rp 0</span>
+                </div>
+                <div class="d-flex justify-content-between small mb-3">
+                  <span>Ongkir</span>
+                  <span id="checkoutShipping">Rp 0</span>
+                </div>
+                <div
+                  class="d-flex justify-content-between fw-bold border-top pt-2"
+                >
+                  <span>Total</span>
+                  <span class="text-primary fs-5" id="checkoutTotal">Rp 0</span>
+                </div>
+
+                <button
+                  class="btn btn-success w-100 mt-3"
+                  onclick="processCheckout()"
+                >
+                  <i class="bi bi-whatsapp"></i> Pesan via WA
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+      <div
+        id="liveToast"
+        class="toast align-items-center text-bg-dark border-0"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
+        <div class="d-flex">
+          <div class="toast-body" id="toastMessage">Action successful!</div>
+          <button
+            type="button"
+            class="btn-close btn-close-white me-2 m-auto"
+            data-bs-dismiss="toast"
+          ></button>
+        </div>
+      </div>
+    </div>
+
+    <button
+      class="btn btn-primary btn-float-filter d-lg-none shadow"
+      type="button"
+      data-bs-toggle="offcanvas"
+      data-bs-target="#offcanvasFilter"
+    >
+      <i class="bi bi-funnel-fill me-2"></i> Filter
+    </button>
+
+    <div
+      class="offcanvas offcanvas-bottom h-75"
+      tabindex="-1"
+      id="offcanvasFilter"
+    >
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Filter Buku</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="offcanvas"
+        ></button>
+      </div>
+      <div class="offcanvas-body">
+        <p class="text-muted">
+          Gunakan filter kategori dan kondisi yang sama seperti di desktop.
+        </p>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // === DATABASE BUKU LENGKAP (15 BUKU) ===
+      const booksDB = [
+        // Populer (ID 1-4)
+        {
+          id: 1,
+          title: "Atomic Habits",
+          author: "James Clear",
+          price: 55000,
+          category: "nonfiksi",
+          condition: "Like New",
+          img: "https://down-id.img.susercontent.com/file/id-11134207-7rbk5-m9dnf377tssb36",
+        },
+        {
+          id: 2,
+          title: "Dunia Sophie",
+          author: "Jostein Gaarder",
+          price: 65000,
+          category: "fiksi",
+          condition: "Good",
+          img: "https://cf.shopee.co.id/file/197079d018e976f80bd82b54b54b4d4e",
+        },
+        {
+          id: 3,
+          title: "Steve Jobs",
+          author: "Walter Isaacson",
+          price: 90000,
+          category: "sejarah",
+          condition: "Like New",
+          img: "https://images.tokopedia.net/img/cache/500-square/VqbcmM/2022/1/30/a8407ce5-7537-4732-9160-f6694aadafbb.jpg",
+        },
+        {
+          id: 4,
+          title: "Clean Code",
+          author: "Robert C. Martin",
+          price: 60000,
+          category: "teknologi",
+          condition: "Good",
+          img: "https://th.bing.com/th/id/OIP.MEt17cARtmmwJBE57IYxWgHaFj?w=151&h=180&c=7&r=0&o=5&cb=ucfimg2&dpr=1.3&pid=1.7&ucfimg=1",
+        },
+
+        // Katalog Umum
+        {
+          id: 5,
+          title: "Laut Bercerita",
+          author: "Leila S. Chudori",
+          price: 70000,
+          category: "fiksi",
+          condition: "Like New",
+          img: "https://www.bithe.co/files/images/944fb95e-656a-40ac-8f75-3fd5f3ef65d7.jpg",
+        },
+        {
+          id: 6,
+          title: "Filosofi Teras",
+          author: "Henry Manampiring",
+          price: 55000,
+          category: "nonfiksi",
+          condition: "Fair",
+          img: "https://lzd-img-global.slatic.net/g/ff/kf/S29bdee1be6ab41dc93ddf68d70cda7d53.jpg_720x720q80.jpg",
+        },
+        {
+          id: 7,
+          title: "Bumi Manusia",
+          author: "Pramoedya A. Toer",
+          price: 80000,
+          category: "fiksi",
+          condition: "Good",
+          img: "https://down-id.img.susercontent.com/file/id-11134207-7r98y-ltdqh81vtnp037",
+        },
+        {
+          id: 8,
+          title: "Design of Everyday Things",
+          author: "Don Norman",
+          price: 85000,
+          category: "teknologi",
+          condition: "Like New",
+          img: "https://jurnalkreasi.com/wp-content/uploads/2024/12/WhatsApp-Image-2024-12-27-at-1.12.40-PM-e1735280033411.jpeg",
+        },
+        {
+          id: 9,
+          title: "Sapiens",
+          author: "Yuval Noah Harari",
+          price: 65000,
+          category: "sejarah",
+          condition: "Fair",
+          img: "https://img.lazcdn.com/g/p/2785ba57b05a96970ff841c6ba1d28ed.jpg_720x720q80.jpg",
+        },
+        {
+          id: 10,
+          title: "Guns, Germs, and Steel",
+          author: "Jared Diamond",
+          price: 58000,
+          category: "sejarah",
+          condition: "Good",
+          img: "https://tse4.mm.bing.net/th/id/OIP.k9gamXdE_pnnyb8-PwOGxgHaHa?cb=ucfimg2&ucfimg=1&w=1080&h=1081&rs=1&pid=ImgDetMain&o=7&rm=3",
+        },
+        {
+          id: 11,
+          title: "Python Crash Course",
+          author: "Eric Matthes",
+          price: 47000,
+          category: "teknologi",
+          condition: "Like New",
+          img: "https://tse3.mm.bing.net/th/id/OIP.RRCz2lSIrbrYd-NP5tPVJAHaFj?cb=ucfimg2&ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3",
+        },
+        {
+          id: 12,
+          title: "Cantik Itu Luka",
+          author: "Eka Kurniawan",
+          price: 35000,
+          category: "fiksi",
+          condition: "Good",
+          img: "https://down-id.img.susercontent.com/file/id-11134207-7quky-lhd25qi7biv706",
+        },
+      ];
+
+      // State
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+
+      // === INITIALIZATION ===
+      document.addEventListener("DOMContentLoaded", () => {
+        renderPopular();
+        applyFilters(); // Render Katalog
+        updateBadges();
+        startCountdown();
+
+        // Check Dark Mode Pref
+        if (localStorage.getItem("theme") === "dark") {
+          document.documentElement.setAttribute("data-bs-theme", "dark");
+        }
+      });
+
+      // === DARK MODE ===
+      function toggleTheme() {
+        const html = document.documentElement;
+        if (html.getAttribute("data-bs-theme") === "dark") {
+          html.setAttribute("data-bs-theme", "light");
+          localStorage.setItem("theme", "light");
+        } else {
+          html.setAttribute("data-bs-theme", "dark");
+          localStorage.setItem("theme", "dark");
+        }
+      }
+
+      // === COUNTDOWN TIMER ===
+      function startCountdown() {
+        let time = 7200; // 2 hours in seconds
+        setInterval(() => {
+          time--;
+          if (time < 0) time = 7200;
+          const h = Math.floor(time / 3600)
+            .toString()
+            .padStart(2, "0");
+          const m = Math.floor((time % 3600) / 60)
+            .toString()
+            .padStart(2, "0");
+          const s = (time % 60).toString().padStart(2, "0");
+          document.getElementById("countdown").innerText = `${h}:${m}:${s}`;
+        }, 1000);
+      }
+
+      // === RENDER POPULAR ===
+      function renderPopular() {
+        const container = document.getElementById("popularContainer");
+        // Ambil 4 buku pertama sebagai populer
+        const popBooks = booksDB.slice(0, 4);
+
+        popBooks.forEach((book) => {
+          container.innerHTML += createCard(book, true);
+        });
+      }
+
+      // === RENDER MAIN CATALOG (FILTER & SORT) ===
+      function applyFilters() {
+        const search = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+        const cat = document.querySelector(
+          'input[name="catFilter"]:checked'
+        ).value;
+        const sort = document.getElementById("sortSelect").value;
+
+        // Get Checkbox values
+        const conds = [];
+        if (document.getElementById("condNew").checked) conds.push("Like New");
+        if (document.getElementById("condGood").checked) conds.push("Good");
+        if (document.getElementById("condFair").checked) conds.push("Fair");
+
+        let filtered = booksDB.filter((b) => {
+          const matchSearch =
+            b.title.toLowerCase().includes(search) ||
+            b.author.toLowerCase().includes(search);
+          const matchCat = cat === "all" || b.category === cat;
+          const matchCond = conds.length === 0 || conds.includes(b.condition);
+          return matchSearch && matchCat && matchCond;
+        });
+
+        // Sorting
+        if (sort === "low") filtered.sort((a, b) => a.price - b.price);
+        else if (sort === "high") filtered.sort((a, b) => b.price - a.price);
+        else if (sort === "az")
+          filtered.sort((a, b) => a.title.localeCompare(b.title));
+
+        // Render
+        const container = document.getElementById("bookContainer");
+        container.innerHTML = "";
+        document.getElementById(
+          "resultCount"
+        ).innerText = `${filtered.length} buku ditemukan`;
+
+        if (filtered.length === 0) {
+          container.innerHTML =
+            '<div class="col-12 text-center py-5 text-muted">Tidak ada buku yang cocok.</div>';
+          return;
+        }
+
+        filtered.forEach((book) => {
+          container.innerHTML += `<div class="col">${createCard(book)}</div>`;
+        });
+      }
+
+      // Helper: Create HTML Card
+      function createCard(book, isPopular = false) {
+        const isWished = wishlist.includes(book.id) ? "active" : "";
+        const heartIcon = wishlist.includes(book.id)
+          ? "bi-heart-fill"
+          : "bi-heart";
+
+        let badgeHtml = "";
+        if (book.condition === "Like New")
+          badgeHtml =
+            '<span class="badge bg-success badge-overlay">Mulus</span>';
+        else if (book.condition === "Fair")
+          badgeHtml =
+            '<span class="badge bg-warning text-dark badge-overlay">Hemat</span>';
+
+        return `
+                <div class="card card-product h-100">
+                    <div class="card-img-wrapper">
+                        ${badgeHtml}
+                        <button class="btn-wishlist ${isWished}" onclick="toggleWishlist(${
+          book.id
+        }, this)">
+                            <i class="bi ${heartIcon}"></i>
+                        </button>
+                        <img src="${book.img}" class="card-img-top" alt="${
+          book.title
+        }">
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <small class="text-uppercase text-muted" style="font-size:0.7rem">${
+                          book.category
+                        }</small>
+                        <h6 class="card-title fw-bold text-truncate">${
+                          book.title
+                        }</h6>
+                        <p class="card-text text-muted small mb-2">${
+                          book.author
+                        }</p>
+                        <div class="mt-auto d-flex justify-content-between align-items-center">
+                            <span class="text-primary fw-bold">Rp ${book.price.toLocaleString(
+                              "id-ID"
+                            )}</span>
+                            <button class="btn btn-sm btn-outline-primary rounded-circle" onclick="addToCart(${
+                              book.id
+                            })">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+      }
+
+      // === WISHLIST SYSTEM ===
+      function toggleWishlist(id, btn) {
+        const idx = wishlist.indexOf(id);
+        if (idx === -1) {
+          wishlist.push(id);
+          btn.classList.add("active");
+          btn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+          showToast("Ditambahkan ke Favorit ❤️");
+        } else {
+          wishlist.splice(idx, 1);
+          btn.classList.remove("active");
+          btn.innerHTML = '<i class="bi bi-heart"></i>';
+          showToast("Dihapus dari Favorit");
+        }
+        localStorage.setItem("wishlist", JSON.stringify(wishlist));
+        updateBadges();
+        renderWishlist();
+      }
+
+      function renderWishlist() {
+        const container = document.getElementById("wishlistContainer");
+        container.innerHTML = "";
+        if (wishlist.length === 0)
+          container.innerHTML =
+            '<p class="text-center text-muted">Belum ada buku favorit.</p>';
+
+        wishlist.forEach((id) => {
+          const book = booksDB.find((b) => b.id === id);
+          if (book) {
+            container.innerHTML += `
+                        <div class="d-flex align-items-center border p-2 rounded">
+                            <img src="${
+                              book.img
+                            }" width="50" height="50" class="rounded object-fit-cover">
+                            <div class="ms-2 flex-grow-1">
+                                <h6 class="m-0 small fw-bold">${book.title}</h6>
+                                <small class="text-primary">Rp ${book.price.toLocaleString()}</small>
+                            </div>
+                            <button class="btn btn-sm text-danger" onclick="toggleWishlist(${
+                              book.id
+                            }, document.querySelector('.btn-wishlist'))"><i class="bi bi-x-lg"></i></button>
+                        </div>
+                    `;
+          }
+        });
+      }
+
+      // === CART & CHECKOUT SYSTEM ===
+      function addSpecialItem(type) {
+        // Dummy logic for flash sale items
+        const item =
+          type === 1
+            ? { id: 99, title: "Psychology of Money (Promo)", price: 38000 }
+            : { id: 98, title: "Sapiens (Promo)", price: 62500 };
+        cart.push(item);
+        saveCart();
+      }
+
+      function addToCart(id) {
+        const book = booksDB.find((b) => b.id === id);
+        cart.push(book); // Allow duplicates for simplicity, or check ID
+        saveCart();
+        showToast("Buku masuk keranjang 🛒");
+      }
+
+      function removeFromCart(index) {
+        cart.splice(index, 1);
+        saveCart();
+      }
+
+      function saveCart() {
+        localStorage.setItem("cart", JSON.stringify(cart));
+        updateBadges();
+        renderCart();
+      }
+
+      function updateBadges() {
+        document.getElementById("cartBadge").innerText = cart.length;
+        document.getElementById("wishBadge").innerText = wishlist.length;
+        renderWishlist();
+        renderCart();
+      }
+
+      function renderCart() {
+        const container = document.getElementById("cartItems");
+        container.innerHTML = "";
+        let subtotal = 0;
+
+        if (cart.length === 0) {
+          container.innerHTML =
+            '<p class="text-center text-muted py-3">Keranjang kosong</p>';
+        } else {
+          cart.forEach((item, idx) => {
+            subtotal += item.price;
+            container.innerHTML += `
+                        <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded mb-2">
+                            <div>
+                                <h6 class="m-0 small fw-bold">${item.title}</h6>
+                                <small class="text-muted">Rp ${item.price.toLocaleString()}</small>
+                            </div>
+                            <button class="btn btn-sm text-danger" onclick="removeFromCart(${idx})"><i class="bi bi-trash"></i></button>
+                        </div>
+                    `;
+          });
+        }
+
+        document.getElementById(
+          "checkoutSubtotal"
+        ).innerText = `Rp ${subtotal.toLocaleString()}`;
+        calculateTotal(); // Recalculate with shipping
+      }
+
+      function calculateTotal() {
+        const subtotalText = document
+          .getElementById("checkoutSubtotal")
+          .innerText.replace("Rp ", "")
+          .replace(/\./g, "");
+        const subtotal = parseInt(subtotalText) || 0;
+        const shipping = parseInt(
+          document.getElementById("provinceSelect").value
+        );
+
+        document.getElementById(
+          "checkoutShipping"
+        ).innerText = `Rp ${shipping.toLocaleString()}`;
+        document.getElementById("checkoutTotal").innerText = `Rp ${(
+          subtotal + shipping
+        ).toLocaleString()}`;
+      }
+
+      function processCheckout() {
+        if (cart.length === 0) {
+          alert("Keranjang kosong!");
+          return;
+        }
+
+        const name = document.getElementById("buyerName").value;
+        const prov =
+          document.getElementById("provinceSelect").options[
+            document.getElementById("provinceSelect").selectedIndex
+          ].text;
+        const address = document.getElementById("buyerAddress").value;
+
+        if (
+          !name ||
+          document.getElementById("provinceSelect").value == 0 ||
+          !address
+        ) {
+          alert("Mohon lengkapi data pengiriman!");
+          return;
+        }
+
+        let msg = `Halo PustakaBekas, Order Baru:%0A%0A`;
+        cart.forEach((item) => (msg += `- ${item.title}%0A`));
+        msg += `%0ATotal Bayar: ${
+          document.getElementById("checkoutTotal").innerText
+        }`;
+        msg += `%0A%0AKirim ke:%0A${name}%0A${prov}%0A${address}`;
+
+        window.open(`https://wa.me/6281234567890?text=${msg}`, "_blank");
+      }
+
+      // === UTILS ===
+      function showToast(msg) {
+        document.getElementById("toastMessage").innerText = msg;
+        new bootstrap.Toast(document.getElementById("liveToast")).show();
+      }
+    </script>
+  </body>
+</html>
